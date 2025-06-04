@@ -1,11 +1,21 @@
 const pool = require("../config/db");
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
 
 // In-memory OTP store (for mock)
 const otpStore = new Map();
 
 // 🔐 Replace this with env variable in production
-const JWT_SECRET = "mysecretkey";
+const JWT_SECRET = "mysecretkey123";
+
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS,
+  },
+});
 
 // Send OTP (mock)
 const sendOtp = async (req, res) => {
@@ -16,12 +26,27 @@ const sendOtp = async (req, res) => {
   }
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-  // Save to map
   const key = phone || email;
   otpStore.set(key, otp);
 
-  console.log(`✅ OTP sent to ${key}: ${otp}`);
+  console.log(`✅ OTP generated: ${otp} for ${key}`);
+
+  if (email) {
+    const mailOptions = {
+      from: `"Calcutta Fresh Foods" <${process.env.GMAIL_USER}>`,
+      to: email,
+      subject: "Your OTP Code",
+      text: `Your OTP code is ${otp}. It is valid for 5 minutes.`,
+    };
+
+    try {
+      await transporter.sendMail(mailOptions);
+      console.log("📧 OTP email sent to", email);
+    } catch (error) {
+      console.error("Email send error:", error);
+      return res.status(500).json({ error: "Failed to send OTP email" });
+    }
+  }
 
   res.json({ message: `OTP sent to ${key}` });
 };

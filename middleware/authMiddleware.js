@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const JWT_SECRET = "mysecretkey"; // use env var in prod
+const JWT_SECRET = "mysecretkey123"; // use env var in prod
 
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
