@@ -5,21 +5,21 @@ const createPaymentOrder = async (req, res) => {
 
   try {
     const razorpay = new Razorpay({
-      key_id: "rzp_test_dummy", // ✅ your Razorpay test key
-      key_secret: "rzp_test_secret"
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_SECRET,
     });
 
     const options = {
       amount: amount * 100, // Razorpay requires paise
       currency: "INR",
-      receipt: `order_rcptid_${Math.floor(Math.random() * 10000)}`
+      receipt: `order_rcptid_${Math.floor(Math.random() * 10000)}`,
     };
 
     const order = await razorpay.orders.create(options);
     res.json({
       order_id: order.id,
       currency: order.currency,
-      amount: order.amount
+      amount: order.amount,
     });
   } catch (err) {
     console.error("Razorpay create error:", err.message);
@@ -28,5 +28,5 @@ const createPaymentOrder = async (req, res) => {
 };
 
 module.exports = {
-  createPaymentOrder // ✅ This line is critical
+  createPaymentOrder, // ✅ This line is critical
 };
