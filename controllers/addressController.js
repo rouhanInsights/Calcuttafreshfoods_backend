@@ -1,8 +1,9 @@
+// controllers/addressController.js
 const pool = require("../config/db");
+const { getLocationIdByPincode } = require("./locationController");
 
 const getalladdress = async (req, res) => {
   const userId = req.user.userId;
-
   try {
     const result = await pool.query(
       `SELECT * FROM cust_addresses WHERE user_id = $1 ORDER BY is_default DESC, created_at DESC`,
@@ -31,17 +32,20 @@ const addaddress = async (req, res) => {
   } = req.body;
 
   try {
+    // Lookup location_id
+    const location_id = await getLocationIdByPincode(pincode);
+    if (!location_id) {
+      return res.status(400).json({ error: "This pincode is not serviceable." });
+    }
+
     if (is_default) {
-      await pool.query(
-        `UPDATE cust_addresses SET is_default = false WHERE user_id = $1`,
-        [userId]
-      );
+      await pool.query(`UPDATE cust_addresses SET is_default = false WHERE user_id = $1`, [userId]);
     }
 
     const result = await pool.query(
       `INSERT INTO cust_addresses 
-        (user_id, name, phone, address_line1, address_line2, city, state, pincode, is_default, floor_no, landmark) 
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+        (user_id, name, phone, address_line1, address_line2, city, state, pincode, is_default, floor_no, landmark, location_id) 
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
         RETURNING *`,
       [
         userId,
@@ -55,6 +59,7 @@ const addaddress = async (req, res) => {
         is_default,
         floor_no,
         landmark,
+        location_id,
       ]
     );
 
@@ -85,6 +90,7 @@ const deleteaddress = async (req, res) => {
     res.status(500).json({ error: "Failed to delete address" });
   }
 };
+
 const editaddress = async (req, res) => {
   const userId = req.user.userId;
   const addressId = req.params.id;
@@ -102,12 +108,14 @@ const editaddress = async (req, res) => {
   } = req.body;
 
   try {
-    // If making this address default, clear others
+    // Lookup location_id
+    const location_id = await getLocationIdByPincode(pincode);
+    if (!location_id) {
+      return res.status(400).json({ error: "This pincode is not serviceable." });
+    }
+
     if (is_default) {
-      await pool.query(
-        `UPDATE cust_addresses SET is_default = false WHERE user_id = $1`,
-        [userId]
-      );
+      await pool.query(`UPDATE cust_addresses SET is_default = false WHERE user_id = $1`, [userId]);
     }
 
     const result = await pool.query(
@@ -121,8 +129,9 @@ const editaddress = async (req, res) => {
         pincode = $7,
         is_default = $8,
         floor_no = $9,
-        landmark = $10
-      WHERE address_id = $11 AND user_id = $12
+        landmark = $10,
+        location_id = $11
+      WHERE address_id = $12 AND user_id = $13
       RETURNING *`,
       [
         name,
@@ -135,6 +144,7 @@ const editaddress = async (req, res) => {
         is_default,
         floor_no,
         landmark,
+        location_id,
         addressId,
         userId,
       ]
@@ -150,6 +160,7 @@ const editaddress = async (req, res) => {
     res.status(500).json({ error: "Failed to update address" });
   }
 };
+
 module.exports = {
   getalladdress,
   addaddress,

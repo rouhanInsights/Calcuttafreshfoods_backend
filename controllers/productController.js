@@ -172,9 +172,102 @@ const getProductsByCategory = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch products by category" });
   }
 };
+// GET /api/products/top-offers
+const getTopOffers = async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT 
+         p.product_id,
+         p.name,
+         p.description,
+         p.product_short_description,
+         p.price,
+         p.sale_price,
+         p.stock_quantity,
+         p.weight,
+         p.image_url,
+         p.created_at,
+         c.category_name,
+         CASE 
+           WHEN p.sale_price IS NOT NULL AND p.sale_price < p.price 
+           THEN ROUND(((p.price - p.sale_price) / p.price) * 100)
+           ELSE 0
+         END AS discount
+       FROM cust_products p
+       JOIN cust_categories c ON p.category_id = c.category_id
+       WHERE p.product_featured = true
+       ORDER BY p.created_at DESC`
+    );
 
+    const transformed = result.rows.map(p => ({
+      id: p.product_id,
+      name: p.name,
+      description: p.description,
+      short_description: p.product_short_description,
+      price: p.price,
+      sale_price: p.sale_price,
+      image: p.image_url,
+      weight: p.weight,
+      discount: p.discount,
+    }));
+
+    res.json(transformed);
+  } catch (err) {
+    console.error("Top Offers Error:", err.message);
+    res.status(500).json({ error: "Failed to fetch top offers" });
+  }
+};
+
+// GET /api/products/best-sellers
+const getBestSellers = async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT 
+         p.product_id,
+         p.name,
+         p.description,
+         p.product_short_description,
+         p.price,
+         p.sale_price,
+         p.stock_quantity,
+         p.weight,
+         p.image_url,
+         p.created_at,
+         c.category_name,
+         CASE 
+           WHEN p.sale_price IS NOT NULL AND p.sale_price < p.price 
+           THEN ROUND(((p.price - p.sale_price) / p.price) * 100)
+           ELSE 0
+         END AS discount
+       FROM cust_products p
+       JOIN cust_categories c ON p.category_id = c.category_id
+       WHERE p.product_visibility = true
+       ORDER BY p.created_at DESC`
+    );
+
+    const transformed = result.rows.map(p => ({
+      id: p.product_id,
+      name: p.name,
+      description: p.description,
+      short_description: p.product_short_description,
+      price: p.price,
+      sale_price: p.sale_price,
+      image: p.image_url,
+      weight: p.weight,
+      discount: p.discount,
+    }));
+
+    res.json(transformed);
+  } catch (err) {
+    console.error("Best Sellers Error:", err.message);
+    res.status(500).json({ error: "Failed to fetch best sellers" });
+  }
+};
 module.exports = {
   getAllProducts,
   getProductById,
   getProductsByCategory,
+  getTopOffers,
+  getBestSellers,
 };
+

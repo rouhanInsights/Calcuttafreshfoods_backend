@@ -52,13 +52,26 @@ if (!user_id) {
     const client = await pool.connect();
     await client.query("BEGIN");
 
+     // ✅ Fetch location_id from address
+    const addressRes = await client.query(
+      `SELECT location_id FROM cust_addresses WHERE address_id = $1 AND user_id = $2`,
+      [address_id, user_id]
+    );
+
+    if (addressRes.rowCount === 0) {
+      await client.query("ROLLBACK");
+      return res.status(400).json({ error: "Invalid address selected" });
+    }
+
+    const location_id = addressRes.rows[0].location_id;
+
     // ✅ 5. Insert into orders table
     const orderResult = await client.query(
       `INSERT INTO cust_orders 
-       (user_id, total_price, status, order_date, payment_method, slot_id, slot_date, address_id)
-       VALUES ($1, $2, 'confirmed', NOW(), $3, $4, $5, $6)
+       (user_id, total_price, status, order_date, payment_method, slot_id, slot_date, address_id, location_id)
+       VALUES ($1, $2, 'confirmed', NOW(), $3, $4, $5, $6, $7)
        RETURNING order_id`,
-      [user_id, total_price, payment_method, slot_id, slot_date, address_id]
+      [user_id, total_price, payment_method, slot_id, slot_date, address_id, location_id]
     );
 
     const order_id = orderResult.rows[0].order_id;
@@ -94,7 +107,7 @@ if (!user_id) {
   }
 };
 
-module.exports = { placeOrder };
+// module.exports = { placeOrder };
 
 // ✅ Get Orders by User
 const getUserOrders = async (req, res) => {
