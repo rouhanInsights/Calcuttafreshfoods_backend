@@ -12,7 +12,7 @@ const verifyToken = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    console.log("✅ Decoded JWT:", decoded); 
+    // console.log("✅ Decoded JWT:", decoded); 
     req.user = decoded; // { userId: ... }
     next();
   } catch (err) {
