@@ -13,7 +13,7 @@ const otpRoutes = require("./routes/otpRoutes");
 const greetingRoutes = require("./routes/greetingRoutes");
 const feedbackRoutes = require("./routes/feedbackRoutes");
 const locationRoutes = require("./routes/locationRoutes");
-dotenv.config();
+const uploadRoutes = require("./routes/uploadRoutes");
 
 const app = express();
 
@@ -36,6 +36,7 @@ app.use("/api/slots", slotRoutes);
 app.use("/api/greetings", greetingRoutes);
 app.use("/api/feedback", feedbackRoutes);
 app.use("/api/location", locationRoutes);
+app.use("/api/upload", uploadRoutes);
 // Root test
 app.get("/", (req, res) => {
   res.send("Backend API is running...");
