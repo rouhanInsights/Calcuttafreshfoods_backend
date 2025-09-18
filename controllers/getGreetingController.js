@@ -18,11 +18,14 @@ const getGreeting = async (req, res) => {
     );
 
     if (userResult.rowCount > 0) {
-      userName = userResult.rows[0].name;
-      if (userName) {
+      userName = userResult.rows[0].name?.trim(); // remove spaces
+      if (userName && userName.length > 0) {
         if (hour < 12) category = "morning";
         else if (hour < 18) category = "afternoon";
         else category = "evening";
+      } else {
+        userName = null; // force null if empty
+        category = "fallback"; // force fallback greetings
       }
     }
 
