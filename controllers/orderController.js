@@ -15,7 +15,9 @@ const {
 if (!user_id) {
   return res.status(401).json({ error: "Unauthorized: Missing user_id" });
 }
-
+if (!slot_date || isNaN(new Date(slot_date).getTime())) {
+  return res.status(400).json({ error: "Invalid or missing delivery date" });
+}
   // ✅ Validate items
   if (!Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: "Cart is empty" });
@@ -34,19 +36,19 @@ if (!user_id) {
     const total_price = subtotal + deliveryCharge;
 
     // ✅ 3. Check 9 AM cutoff for same-day delivery
-    const currentTime = new Date();
-    const cutoffTime = new Date(currentTime);
-    cutoffTime.setHours(9, 0, 0, 0);
+    // const currentTime = new Date();
+    // const cutoffTime = new Date(currentTime);
+    // cutoffTime.setHours(9, 0, 0, 0);
 
-    const selectedDate = new Date(slot_date);
-    const isSameDay = currentTime.toDateString() === selectedDate.toDateString();
+    // const selectedDate = new Date(slot_date);
+    // const isSameDay = currentTime.toDateString() === selectedDate.toDateString();
 
-    if (isSameDay && currentTime > cutoffTime) {
-      return res.status(400).json({
-        error: "Orders for same-day delivery must be placed before 9:00 AM.",
-        cutoff_violation: true,
-      });
-    }
+    // if (isSameDay && currentTime > cutoffTime) {
+    //   return res.status(400).json({
+    //     error: "Orders for same-day delivery must be placed before 9:00 AM.",
+    //     cutoff_violation: true,
+    //   });
+    // }
 
     // ✅ 4. Start DB transaction
     const client = await pool.connect();
