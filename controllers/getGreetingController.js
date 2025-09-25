@@ -20,9 +20,9 @@ const getGreeting = async (req, res) => {
     if (userResult.rowCount > 0) {
       userName = userResult.rows[0].name?.trim(); // remove spaces
       if (userName && userName.length > 0) {
-        if (hour < 12) category = "morning";
-        else if (hour < 18) category = "afternoon";
-        else category = "evening";
+        if (hour < 10) category = "morning";
+        if (hour < 12) category = "mid-morning";
+        else category = "generic";
       } else {
         userName = null; // force null if empty
         category = "fallback"; // force fallback greetings
@@ -49,9 +49,11 @@ const getGreeting = async (req, res) => {
     const random = Math.floor(Math.random() * result.rows.length);
     const message = result.rows[random].message;
 
-    const finalGreeting = userName
-      ? message.replace("{name}", userName.split(" ")[0])
-      : message;
+    // const finalGreeting = userName
+    //   ? message.replace("{name}", userName.split(" ")[0])
+    //   : message;
+    const finalGreeting = message.replace("{name}", userName ? userName.split(" ")[0] : "there");
+
 
     // ✅ Cache it for 1 hour
     // await client.setEx(`greeting:${category}`, 3600, message);
