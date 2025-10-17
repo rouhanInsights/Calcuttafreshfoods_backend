@@ -14,6 +14,7 @@ const getAllProducts = async (req, res) => {
         p.price,
         p.sale_price,
         p.stock_quantity,
+        p.product_stock_available AS in_stock,
         p.weight,
         p.image_url,
         p.created_at,
@@ -49,7 +50,7 @@ const getAllProducts = async (req, res) => {
 
     const result = await pool.query(query, values);
 
-    const transformed = result.rows.map(p => ({
+    const transformed = result.rows.map((p) => ({
       id: p.product_id,
       name: p.name,
       description: p.description,
@@ -59,6 +60,7 @@ const getAllProducts = async (req, res) => {
       image: p.image_url,
       weight: p.weight,
       discount: p.discount,
+      in_stock: Boolean(p.in_stock),
     }));
 
     res.json(transformed);
@@ -82,6 +84,7 @@ const getProductById = async (req, res) => {
          p.price,
          p.sale_price,
          p.stock_quantity,
+         p.product_stock_available AS in_stock,
          p.weight,
          p.image_url,
          p.created_at,
@@ -113,6 +116,7 @@ const getProductById = async (req, res) => {
       image: p.image_url,
       weight: p.weight,
       discount: p.discount,
+      in_stock: Boolean(p.in_stock),
     };
 
     res.json(product);
@@ -140,6 +144,7 @@ const getProductsByCategory = async (req, res) => {
          p.price,
          p.sale_price,
          p.stock_quantity,
+         p.product_stock_available AS in_stock,
          p.weight,
          p.image_url,
          p.created_at,
@@ -151,7 +156,7 @@ const getProductsByCategory = async (req, res) => {
       [category_id]
     );
 
-    const transformed = result.rows.map(p => ({
+    const transformed = result.rows.map((p) => ({
       id: p.product_id,
       name: p.name,
       description: p.description,
@@ -164,6 +169,7 @@ const getProductsByCategory = async (req, res) => {
         p.sale_price && p.price && p.sale_price < p.price
           ? Math.round(((p.price - p.sale_price) / p.price) * 100)
           : 0,
+      in_stock: Boolean(p.in_stock),
     }));
 
     res.json(transformed);
@@ -184,6 +190,7 @@ const getTopOffers = async (req, res) => {
          p.price,
          p.sale_price,
          p.stock_quantity,
+         p.product_stock_available AS in_stock,
          p.weight,
          p.image_url,
          p.created_at,
@@ -199,7 +206,7 @@ const getTopOffers = async (req, res) => {
        ORDER BY p.created_at DESC`
     );
 
-    const transformed = result.rows.map(p => ({
+    const transformed = result.rows.map((p) => ({
       id: p.product_id,
       name: p.name,
       description: p.description,
@@ -209,6 +216,7 @@ const getTopOffers = async (req, res) => {
       image: p.image_url,
       weight: p.weight,
       discount: p.discount,
+      in_stock: Boolean(p.in_stock),
     }));
 
     res.json(transformed);
@@ -230,6 +238,7 @@ const getBestSellers = async (req, res) => {
          p.price,
          p.sale_price,
          p.stock_quantity,
+         p.product_stock_available AS in_stock,
          p.weight,
          p.image_url,
          p.created_at,
@@ -245,7 +254,7 @@ const getBestSellers = async (req, res) => {
        ORDER BY p.created_at DESC`
     );
 
-    const transformed = result.rows.map(p => ({
+    const transformed = result.rows.map((p) => ({
       id: p.product_id,
       name: p.name,
       description: p.description,
@@ -255,6 +264,7 @@ const getBestSellers = async (req, res) => {
       image: p.image_url,
       weight: p.weight,
       discount: p.discount,
+      in_stock: Boolean(p.in_stock),
     }));
 
     res.json(transformed);
@@ -270,4 +280,3 @@ module.exports = {
   getTopOffers,
   getBestSellers,
 };
-
